@@ -9,10 +9,12 @@ const VOTER_KEY = 'problem-board-voter-id';
 
 function getVoterId() {
   let id = localStorage.getItem(VOTER_KEY);
+
   if (!id) {
     id = crypto.randomUUID();
     localStorage.setItem(VOTER_KEY, id);
   }
+
   return id;
 }
 
@@ -22,23 +24,6 @@ function formatDate(value) {
     month: 'short',
     year: 'numeric',
   }).format(new Date(value));
-}
-
-function ProblemSymbol() {
-  return (
-    <svg viewBox="0 0 100 100" width="100" height="100" fill="none">
-      <path
-        d="M50 9C27 9 9 26 9 48c0 14 7 25 19 32v12l18-8c3 1 7 2 11 2 23 0 40-17 40-40S73 9 50 9Z"
-        fill="#ffffff"
-        stroke="#171717"
-        strokeWidth="5"
-        strokeLinejoin="round"
-      />
-      <circle cx="35" cy="47" r="4.5" fill="#171717"/>
-      <circle cx="50" cy="47" r="4.5" fill="#171717"/>
-      <circle cx="65" cy="47" r="4.5" fill="#171717"/>
-    </svg>
-  );
 }
 
 export default function App() {
@@ -114,7 +99,7 @@ export default function App() {
   useEffect(() => {
     loadProblems();
 
-    if (!supabase) return;
+    if (!supabase) return undefined;
 
     const channel = supabase
       .channel('problem-board-live')
@@ -125,7 +110,11 @@ export default function App() {
       )
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'problem_agreements' },
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'problem_agreements'
+        },
         loadProblems
       )
       .subscribe();
@@ -200,6 +189,7 @@ export default function App() {
         const next = [...agreedIds, problemId];
 
         setAgreedIds(next);
+
         localStorage.setItem(
           'problem-board-agreed',
           JSON.stringify(next)
@@ -243,7 +233,12 @@ export default function App() {
           aria-expanded={showProblems}
           type="button"
         >
-          <ProblemSymbol />
+          <img
+            src="/logo.png"
+            alt="Tell Me Your Problem"
+            className="symbol-logo"
+          />
+
           <span className="symbol-indicator">
             {showProblems ? '×' : '↗'}
           </span>
@@ -295,24 +290,35 @@ export default function App() {
                 />
 
                 <div className="composer-bottom">
-                  <span>{content.length}/{MAX_LENGTH}</span>
+                  <span>
+                    {content.length}/{MAX_LENGTH}
+                  </span>
 
                   <button
                     type="submit"
-                    disabled={sending || !name.trim() || !content.trim()}
+                    disabled={
+                      sending ||
+                      !name.trim() ||
+                      !content.trim()
+                    }
                   >
                     {sending ? 'Sending...' : 'Share ↗'}
                   </button>
                 </div>
+
               </form>
             )}
 
             {error && (
-              <p className="error">{error}</p>
+              <p className="error" role="alert">
+                {error}
+              </p>
             )}
 
             {!isSupabaseConfigured && (
-              <p className="error">Supabase connection missing.</p>
+              <p className="error">
+                Supabase connection missing.
+              </p>
             )}
 
             {loading ? (
@@ -327,10 +333,16 @@ export default function App() {
                     <article
                       className={`problem-card card-${index % 6}`}
                       key={p.id}
-                      style={{ '--card-index': index % 6 }}
+                      style={{
+                        '--card-index': index % 6
+                      }}
                     >
+
                       <div className="card-top">
-                        <span className="author">{p.name}</span>
+                        <span className="author">
+                          {p.name}
+                        </span>
+
                         <span className="card-date">
                           {formatDate(p.created_at)}
                         </span>
@@ -341,19 +353,26 @@ export default function App() {
                       </p>
 
                       <div className="card-bottom">
+
                         <span className="agree-count">
                           {p.agree_count} people agree
                         </span>
 
                         <button
-                          className={`agree-button ${agreed ? 'agreed' : ''}`}
+                          className={`agree-button ${
+                            agreed ? 'agreed' : ''
+                          }`}
                           onClick={() => handleAgree(p.id)}
-                          disabled={agreed || agreeingId === p.id}
+                          disabled={
+                            agreed || agreeingId === p.id
+                          }
                           type="button"
                         >
                           {agreed ? 'Agreed ✓' : 'Agree +'}
                         </button>
+
                       </div>
+
                     </article>
                   );
                 })}

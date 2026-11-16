@@ -870,3 +870,19 @@ textarea::placeholder {
   }
 
 }
+
+/* Custom website logo */
+
+.symbol-logo {
+  display: block;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+@media (max-width: 700px) {
+  .symbol-logo {
+    width: 78px;
+    height: 78px;
+  }
+}
